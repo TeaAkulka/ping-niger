@@ -1,0 +1,77 @@
+import pygame
+import random
+
+pygame.init()
+
+WIDTH, HEIGHT = 800, 600
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+window = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Пінг-понг")
+
+# Завантаження малюнків
+ball_img = pygame.image.load('ball_image.png').convert_alpha()
+ball_img = pygame.transform.scale(ball_img, (40, 40))  # Змінити розміри м'яча
+paddle_img = pygame.image.load('paddle_image.png').convert_alpha()
+
+# Розміри малюнків бортівок
+PADDLE_WIDTH, PADDLE_HEIGHT = 20, 100
+
+ball_x = WIDTH // 2
+ball_y = HEIGHT // 2
+ball_dx = random.choice([-5, 5])
+ball_dy = random.choice([-5, 5])
+
+paddle1_x, paddle1_y = 50, (HEIGHT - PADDLE_HEIGHT) // 2
+paddle2_x, paddle2_y = WIDTH - 50 - PADDLE_WIDTH, (HEIGHT - PADDLE_HEIGHT) // 2
+
+def update():
+    global ball_x, ball_y, ball_dx, ball_dy, paddle1_y, paddle2_y
+
+    ball_x += ball_dx
+    ball_y += ball_dy
+
+    if ball_x <= paddle1_x + PADDLE_WIDTH and paddle1_y <= ball_y <= paddle1_y + PADDLE_HEIGHT:
+        ball_dx = abs(ball_dx)
+    elif ball_x >= paddle2_x - 20 and paddle2_y <= ball_y <= paddle2_y + PADDLE_HEIGHT:
+        ball_dx = -abs(ball_dx)
+
+    if ball_y <= 0 or ball_y >= HEIGHT - 20:
+        ball_dy *= -1
+
+    if ball_x < 0 or ball_x > WIDTH:
+        pygame.quit()
+        quit()
+
+def draw():
+    window.fill(BLACK)
+    window.blit(paddle_img, (paddle1_x, paddle1_y))
+    window.blit(paddle_img, (paddle2_x, paddle2_y))
+    window.blit(ball_img, (ball_x - 20, ball_y - 20))  # Враховуємо радіус м'яча
+    pygame.display.update()
+
+running = True
+clock = pygame.time.Clock()
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_w] and paddle1_y > 0:
+        paddle1_y -= 5
+    if keys[pygame.K_s] and paddle1_y < HEIGHT - PADDLE_HEIGHT:
+        paddle1_y += 5
+    if keys[pygame.K_UP] and paddle2_y > 0:
+        paddle2_y -= 5
+    if keys[pygame.K_DOWN] and paddle2_y < HEIGHT - PADDLE_HEIGHT:
+        paddle2_y += 5
+
+    update()
+    draw()
+    clock.tick(60)
+
+pygame.quit()
+quit()
