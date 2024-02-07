@@ -1,0 +1,88 @@
+import pygame
+import random
+
+# Ініціалізація Pygame
+pygame.init()
+
+# Константи
+WIDTH, HEIGHT = 800, 600
+BALL_RADIUS = 10
+PADDLE_WIDTH, PADDLE_HEIGHT = 10, 100
+PADDLE_SPEED = 5
+BALL_SPEED_X = 5
+BALL_SPEED_Y = 5
+
+# Кольори
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Створення вікна гри
+window = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Пінг-понг")
+
+# Початкові позиції м'яча та ракеток
+ball_x = WIDTH // 2
+ball_y = HEIGHT // 2
+ball_dx = BALL_SPEED_X * random.choice([1, -1])
+ball_dy = BALL_SPEED_Y * random.choice([1, -1])
+
+paddle1_x, paddle1_y = 50, (HEIGHT - PADDLE_HEIGHT) // 2
+paddle2_x, paddle2_y = WIDTH - 50 - PADDLE_WIDTH, (HEIGHT - PADDLE_HEIGHT) // 2
+
+# Оновлення гри
+def update():
+    global ball_x, ball_y, ball_dx, ball_dy, paddle1_y, paddle2_y
+
+    ball_x += ball_dx
+    ball_y += ball_dy
+
+    # Відскок м'яча від ракеток
+    if ball_x <= paddle1_x + PADDLE_WIDTH and paddle1_y <= ball_y <= paddle1_y + PADDLE_HEIGHT:
+        ball_dx = abs(ball_dx)
+    elif ball_x >= paddle2_x - BALL_RADIUS and paddle2_y <= ball_y <= paddle2_y + PADDLE_HEIGHT:
+        ball_dx = -abs(ball_dx)
+
+    # Відскок м'яча від верхньої та нижньої стінок
+    if ball_y <= 0 or ball_y >= HEIGHT - BALL_RADIUS:
+        ball_dy *= -1
+
+    # Перевірка на кінець гри
+    if ball_x < 0 or ball_x > WIDTH:
+        # Якщо м'яч вилетів за межі поля, гра закінчена
+        pygame.quit()
+        quit()
+
+# Малювання гри
+def draw():
+    window.fill(BLACK)
+    pygame.draw.rect(window, WHITE, (paddle1_x, paddle1_y, PADDLE_WIDTH, PADDLE_HEIGHT))
+    pygame.draw.rect(window, WHITE, (paddle2_x, paddle2_y, PADDLE_WIDTH, PADDLE_HEIGHT))
+    pygame.draw.circle(window, WHITE, (ball_x, ball_y), BALL_RADIUS)
+    pygame.display.update()
+
+# Основний цикл гри
+running = True
+clock = pygame.time.Clock()
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Рух ракеток
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_w] and paddle1_y > 0:
+        paddle1_y -= PADDLE_SPEED
+    if keys[pygame.K_s] and paddle1_y < HEIGHT - PADDLE_HEIGHT:
+        paddle1_y += PADDLE_SPEED
+    if keys[pygame.K_UP] and paddle2_y > 0:
+        paddle2_y -= PADDLE_SPEED
+    if keys[pygame.K_DOWN] and paddle2_y < HEIGHT - PADDLE_HEIGHT:
+        paddle2_y += PADDLE_SPEED
+
+    update()
+    draw()
+    clock.tick(60)
+
+# Вихід з гри
+pygame.quit()
+quit()
